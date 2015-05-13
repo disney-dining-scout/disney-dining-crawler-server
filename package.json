@@ -1,7 +1,7 @@
 {
   "name": "DisneyDiningCrawlerServer",
   "description": "The crawler server for the Disney Dining Scout App",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "author": "Matt Voss",
   "keywords": [],
   "dependencies": {

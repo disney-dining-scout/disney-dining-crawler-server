@@ -15,6 +15,12 @@ var fs = require('fs'),
     numbers = [], models = {}, db = {}, job, purgeJob,
     configFile,
     latestUids = new CBuffer(20),
+    sendReady = function() {
+      var message = {
+        status: "ok"
+      };
+      pubClient.publish("disneydining:readysearch", JSON.stringify(message));
+    },
     setSubscription = function() {
       subClient.psubscribe("disneydining:*");
       console.log("Subscribing");
@@ -71,6 +77,7 @@ var init = function() {
       config.get("redis:db"),
       function() {
         //console.log("Redis DB set to:", config.get("redis:db"));
+        sendReady();
       }
     );
   }

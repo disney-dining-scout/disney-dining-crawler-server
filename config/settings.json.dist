@@ -10,12 +10,5 @@
     "host": "redis:hostname",
     "port": 6379,
     "db": 0
-  },
-  "mail": {
-    "host": "mail:hostname",
-    "port": 25
-  },
-  "port": 3001,
-  "baseUri": "http://localhost:3001/",
-  "limit": "20"
+  }
 }
