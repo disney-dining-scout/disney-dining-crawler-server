@@ -14,7 +14,7 @@
       Sequelize = require("sequelize"),
       CBuffer = require('CBuffer'),
       numbers = [], models = {}, db = {}, job, purgeJob,
-      configFile, pool, queue,
+      configFile, pool, queue, freeLimit = 10, subCounter = 0,
       latestUids = new CBuffer(20),
       sendReady = function() {
         var message = {
@@ -125,6 +125,7 @@
                 var now = parseInt(moment().tz("America/New_York").format("H"), 10),
                   offset = (now >= 3 && now < 6) ? "30" : "5",
                   limit = config.get("limit") ? config.get("limit") : "10",
+                  typeOfSearch = (subCounter <= freeLimit) ? "IN" : "NOT IN",
                   sql = "SELECT "+
                         " globalSearches.*, "+
                         " userSearches.restaurant, "+
@@ -135,7 +136,8 @@
                         "JOIN userSearches ON globalSearches.uid = userSearches.uid "+
                         "JOIN restaurants ON userSearches.restaurant = restaurants.id "+
                         "WHERE userSearches.date >= UTC_TIMESTAMP() + INTERVAL 1 HOUR AND globalSearches.lastChecked < UTC_TIMESTAMP() - INTERVAL "+offset+" MINUTE "+
-                        " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL ";
+                        " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL " +
+                        " AND userSearches.user " + typeOfSearch + " (SELECT id FROM `users` WHERE subExpires >= UTC_TIMESTAMP())";
                 if (latestUids.toArray().length > 0) {
                   var uids = latestUids.toArray().map(function(uid){
                       // This will wrap each element of the uids array with quotes
@@ -146,7 +148,11 @@
                 sql += "GROUP BY globalSearches.uid ";
                 sql += "ORDER BY globalSearches.lastChecked ASC ";
                 sql += "LIMIT " + search.number.toString();
-
+                if (subCounter > freeLimit) {
+                  console.log('Using free searches:', typeOfSearch, subCounter);
+                  subCounter = 0;
+                }
+                subCounter += search.number;
 
                 connection.query(
                   sql,
