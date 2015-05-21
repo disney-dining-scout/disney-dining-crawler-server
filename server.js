@@ -43,6 +43,20 @@
           }
         });
       },
+      getConfiguration = function() {
+        config = nconf
+        .argv()
+        .env("__")
+        .file({ file: configFile });
+      },
+      refreshConfiguration = function() {
+        console.log("refreshing configuration");
+        getConfiguration();
+        setTimeout(
+          refreshConfiguration,
+          300000
+        );
+      },
       connectDB = function() {
         pool = mysql.createPool({
           connectionLimit : 10,
@@ -68,10 +82,7 @@
       configFile = process.cwd()+'/config/settings.json';
     }
 
-    config = nconf
-    .argv()
-    .env("__")
-    .file({ file: configFile });
+    refreshConfiguration();
 
     connectDB();
 
