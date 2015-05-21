@@ -174,6 +174,7 @@
                           "              FROM ipAddressLog " +
                           "              GROUP BY ipAddressId " +
                           "            ) max ON (max.ipAddressId = ipAddress.id) " +
+                          "WHERE ipAddress.deletedAt IS NULL " +
                           "ORDER BY max.createdAt ASC, ipAddress.id ASC " +
                           "LIMIT " + search.number.toString();
                 connection.query(
