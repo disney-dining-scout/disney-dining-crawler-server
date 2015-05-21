@@ -14,7 +14,7 @@
       Sequelize = require("sequelize"),
       CBuffer = require('CBuffer'),
       numbers = [], models = {}, db = {}, job, purgeJob,
-      configFile, pool, queue, freeLimit = 10, subCounter = 0,
+      configFile, pool, queue, subCounter = 0,
       latestUids = new CBuffer(20),
       sendReady = function() {
         var message = {
@@ -125,7 +125,7 @@
                 var now = parseInt(moment().tz("America/New_York").format("H"), 10),
                   offset = (now >= 3 && now < 6) ? "30" : "5",
                   limit = config.get("limit") ? config.get("limit") : "10",
-                  typeOfSearch = (subCounter <= freeLimit) ? "IN" : "NOT IN",
+                  typeOfSearch = (subCounter <= config.get("freeLimit")) ? "IN" : "NOT IN",
                   sql = "SELECT "+
                         " globalSearches.*, "+
                         " userSearches.restaurant, "+
@@ -148,7 +148,7 @@
                 sql += "GROUP BY globalSearches.uid ";
                 sql += "ORDER BY globalSearches.lastChecked ASC ";
                 sql += "LIMIT " + search.number.toString();
-                if (subCounter > freeLimit) {
+                if (subCounter > config.get("freeLimit")) {
                   console.log('Using free searches:', typeOfSearch, subCounter);
                   subCounter = 0;
                 }

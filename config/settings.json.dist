@@ -10,5 +10,6 @@
     "host": "redis:hostname",
     "port": 6379,
     "db": 0
-  }
+  },
+  "freeLimit": 30
 }
