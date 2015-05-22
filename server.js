@@ -146,7 +146,8 @@
                         "FROM globalSearches "+
                         "JOIN userSearches ON globalSearches.uid = userSearches.uid "+
                         "JOIN restaurants ON userSearches.restaurant = restaurants.id "+
-                        "WHERE userSearches.date >= UTC_TIMESTAMP() + INTERVAL 1 HOUR AND globalSearches.lastChecked < UTC_TIMESTAMP() - INTERVAL "+offset+" MINUTE "+
+                        "WHERE userSearches.date >= UTC_TIMESTAMP() AND globalSearches.lastChecked < UTC_TIMESTAMP() - INTERVAL "+offset+" MINUTE "+
+                        " AND userSearches.date <= UTC_TIMESTAMP() + INTERVAL 180 DAY "+
                         " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL " +
                         " AND userSearches.user " + typeOfSearch + " (SELECT id FROM `users` WHERE subExpires >= UTC_TIMESTAMP())";
                 if (latestUids.toArray().length > 0) {
