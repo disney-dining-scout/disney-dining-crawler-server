@@ -105,7 +105,7 @@
 
     connectDB();
 
-    latestUids = (config.get("uidBufferSize")) ? config.get("uidBufferSize") : new CBuffer(75);
+    latestUids = (config.get("uidBufferSize")) ? new CBuffer(config.get("uidBufferSize")) : new CBuffer(75);
 
     subClient = redis.createClient(
       config.get("redis:port"),
