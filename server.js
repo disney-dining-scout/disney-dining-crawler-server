@@ -186,7 +186,7 @@
                           "              FROM ipAddressLog " +
                           "              GROUP BY ipAddressId " +
                           "            ) max ON (max.ipAddressId = ipAddress.id) " +
-                          "WHERE ipAddress.deletedAt IS NULL " +
+                          "WHERE ipAddress.deletedAt IS NULL AND ipAddress.enabled = 1 " +
                           "ORDER BY max.createdAt ASC, ipAddress.id ASC " +
                           "LIMIT " + search.number.toString();
                 connection.query(
@@ -251,6 +251,7 @@
                             [ip.id],
                             function(error, res) {
                               if (!error) {
+                                console.log(res);
                                 cback(null, res);
                               } else {
                                 cback(error);
