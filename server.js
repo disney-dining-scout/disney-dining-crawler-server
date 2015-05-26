@@ -15,7 +15,7 @@
       CBuffer = require('CBuffer'),
       numbers = [], models = {}, db = {}, job, purgeJob,
       configFile, pool, queue, subCounter = 0,
-      latestUids = new CBuffer(72),
+      latestUids = new CBuffer(75),
       updateIpLog = function(message) {
         pool.getConnection(
           function(err, connection) {
@@ -104,6 +104,8 @@
     refreshConfiguration();
 
     connectDB();
+
+    latestUids = (config.get("uidBufferSize")) ? config.get("uidBufferSize") : new CBuffer(75);
 
     subClient = redis.createClient(
       config.get("redis:port"),
