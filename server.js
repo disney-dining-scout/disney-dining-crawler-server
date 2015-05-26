@@ -15,7 +15,24 @@
       CBuffer = require('CBuffer'),
       numbers = [], models = {}, db = {}, job, purgeJob,
       configFile, pool, queue, subCounter = 0,
-      latestUids = new CBuffer(20),
+      latestUids = new CBuffer(72),
+      updateIpLog = function(message) {
+        pool.getConnection(
+          function(err, connection) {
+            var sql = "UPDATE ipAddressLog SET success = ? WHERE id = ?";
+            connection.query(
+              sql,
+              [message.success, message.id],
+              function(error, update) {
+                if (error) {
+                  console.log(error);
+                }
+                connection.release();
+              }
+            );
+          }
+        );
+      },
       sendReady = function() {
         var message = {
           status: "ok"
@@ -40,6 +57,8 @@
               }
             );
 
+          } else if (subChannel === "iplogupdate") {
+            updateIpLog(message);
           }
         });
       },
@@ -233,36 +252,33 @@
                   async.map(
                     results.searches,
                     function(search, cback) {
-                      search.ipAddress = results.ips[i].ipAddress;
+                      var sql = "INSERT INTO ipAddressLog (ipAddressId, createdAt, updatedAt) values(?, UTC_TIMESTAMP(), UTC_TIMESTAMP())";
+                      search.ipAddress = {
+                        ip: results.ips[i].ipAddress,
+                        id: null
+                      };
                       search.userAgent = results.agents[i].agent;
                       latestUids.push(search.uid);
-                      i++;
-                      cback(null, search);
-                    },
-                    function(err, searches){
-                      var message = underscore.extend(search, {searches: searches}),
-                          sql = "INSERT INTO ipAddressLog (ipAddressId, createdAt, updatedAt) values(?, UTC_TIMESTAMP(), UTC_TIMESTAMP())";
-                      pubClient.publish("disneydining:sendsearch", JSON.stringify(message));
-                      async.each(
-                        results.ips,
-                        function(ip, cback) {
-                          connection.query(
-                            sql,
-                            [ip.id],
-                            function(error, res) {
-                              if (!error) {
-                                console.log(res);
-                                cback(null, res);
-                              } else {
-                                cback(error);
-                              }
-                            }
-                          );
-                        },
-                        function(err, res) {
-                          finished();
+                      connection.query(
+                        sql,
+                        [results.ips[i].id],
+                        function(error, res) {
+                          i++;
+                          if (!error) {
+                            search.ipAddress.id = res.insertId;
+                            cback(null, search);
+                          } else {
+                            console.log(error);
+                            cback(null, search);
+                          }
                         }
                       );
+
+                    },
+                    function(err, searches){
+                      var message = underscore.extend(search, {searches: searches});
+                      pubClient.publish("disneydining:sendsearch", JSON.stringify(message));
+                      finished();
 
                     }
                   );
