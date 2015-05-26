@@ -255,7 +255,6 @@
                     results.searches,
                     function(search, cback) {
                       var sql = "INSERT INTO ipAddressLog (ipAddressId, createdAt, updatedAt) values(?, UTC_TIMESTAMP(), UTC_TIMESTAMP())";
-                      console.log(results.ips[i]);
                       search.ipAddress = {
                         ip: results.ips[i].ipAddress,
                         id: null
