@@ -169,8 +169,7 @@
                         "JOIN restaurants ON userSearches.restaurant = restaurants.id "+
                         "WHERE userSearches.date >= UTC_TIMESTAMP() AND globalSearches.lastChecked < UTC_TIMESTAMP() - INTERVAL "+offset+" MINUTE "+
                         " AND userSearches.date <= UTC_TIMESTAMP() + INTERVAL 180 DAY "+
-                        " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL " +
-                        " AND userSearches.user " + typeOfSearch + " (SELECT id FROM `users` WHERE subExpires >= UTC_TIMESTAMP())";
+                        " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL GROUP BY globalSearches.uid";
                 if (latestUids.toArray().length > 0) {
                   var uids = latestUids.toArray().map(function(uid){
                       // This will wrap each element of the uids array with quotes
