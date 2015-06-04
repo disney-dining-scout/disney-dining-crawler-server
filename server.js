@@ -15,7 +15,7 @@
       CBuffer = require('CBuffer'),
       numbers = [], models = {}, db = {}, job, purgeJob,
       configFile, pool, queue, subCounter = 0,
-      latestUids = new CBuffer(250),
+      latestUids = new CBuffer(350),
       updateIpLog = function(message) {
         pool.getConnection(
           function(err, connection) {
