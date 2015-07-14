@@ -46,7 +46,7 @@
         subClient.on("pmessage", function (pattern, channel, message) {
           var _channel = channel.split(":"),
               subChannel = _channel[1];
-          //console.log("channel ", channel, ": ", message);
+          console.log("channel ", channel, ": ", message);
           message = JSON.parse(message);
           if (subChannel === "getsearch") {
             //getSearch(message);
@@ -161,12 +161,15 @@
                   sql = "SELECT "+
                         " globalSearches.*, "+
                         " userSearches.restaurant, "+
+                        " userSearches.secondary, "+
                         " restaurants.name, "+
+                        " secondary.name AS secondaryName, "+
                         " userSearches.date, "+
                         " userSearches.partySize "+
                         "FROM globalSearches "+
                         "JOIN userSearches ON globalSearches.uid = userSearches.uid "+
                         "JOIN restaurants ON userSearches.restaurant = restaurants.id "+
+                        "LEFT JOIN restaurants AS secondary ON userSearches.secondary = secondary.id "+
                         "WHERE userSearches.date >= UTC_TIMESTAMP() AND globalSearches.lastChecked < UTC_TIMESTAMP() - INTERVAL "+offset+" MINUTE "+
                         " AND userSearches.date <= UTC_TIMESTAMP() + INTERVAL 180 DAY "+
                         " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL " +
@@ -186,7 +189,7 @@
                   subCounter = 0;
                 }
                 subCounter += search.number;
-
+                //console.log(sql);
                 connection.query(
                   sql,
                   function(error, searches) {
@@ -244,13 +247,14 @@
               }
             },
             function(error, results) {
+              console.log(error);
               if (!error) {
                 var i = 0,
                     finished = function() {
                       connection.release();
                       callback();
                     };
-                if (results.searches.length > 0) {
+                if (results.searches.length > 0 && results.ips.length > 0) {
                   async.mapSeries(
                     results.searches,
                     function(search, cback) {
@@ -284,6 +288,10 @@
 
                     }
                   );
+                } else if (results.searches.length > 0) {
+                  var message = underscore.extend(search, {searches: results.searches});
+                  pubClient.publish("disneydining:sendsearch", JSON.stringify(message));
+                  finished();
                 } else {
                   finished();
                 }
