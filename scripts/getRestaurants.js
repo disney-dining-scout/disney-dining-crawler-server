@@ -12,7 +12,7 @@ var getRestaurants = function() {
     {
       uri: 'https://disneyworld.disney.go.com/dining/map/',
       method: "GET",
-      proxy: "http://37.58.52.41:2020";
+      proxy: "http://37.58.52.41:2020"
     },
     function (error, response, body) {
       console.log("Got page!");
