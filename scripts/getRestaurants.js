@@ -11,9 +11,11 @@ var getRestaurants = function() {
   request(
     {
       uri: 'https://disneyworld.disney.go.com/dining/map/',
-      method: "GET"
+      method: "GET",
+      proxy: "http://37.58.52.41:2020";
     },
     function (error, response, body) {
+      console.log("Got page!");
       var $ = cheerio.load(body),
           js = $('#finderBlob').text(),
           PEP = PEP || {};
@@ -22,6 +24,7 @@ var getRestaurants = function() {
         Object.keys(PEP.Finder.List.cards),
         function(id, callback) {
           var card = PEP.Finder.List.cards[id];
+          console.log(card.name);
           models.Restaurants
             .findOrCreate(
               {
