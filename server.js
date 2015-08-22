@@ -126,7 +126,7 @@
       config.get("redis:port"),
       config.get("redis:host")
     );
-    if (config.get("redis:db")) {
+    if (config.get("redis:db") >= 0) {
       pubClient.select(
         config.get("redis:db"),
         function() {
@@ -265,6 +265,8 @@
                         id: null
                       };
                       search.userAgent = results.agents[i].agent;
+                      pubClient.lpush('uids', search.uid);
+                      pubClient.ltrim('uids', 0, 500);
                       latestUids.push(search.uid);
                       connection.query(
                         sql,
