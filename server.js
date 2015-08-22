@@ -53,7 +53,7 @@
             queue.push(
               message,
               function (err) {
-                console.log('finished processing search request');
+                console.log('finished processing search request', message.clientId);
               }
             );
 
@@ -149,6 +149,7 @@
 
   queue = async.queue(
     function (search, callback) {
+      console.log('queue length:', queue.length());
       pool.getConnection(
         function(err, connection) {
           async.parallel(
@@ -306,6 +307,10 @@
 
   queue.drain = function() {
     console.log('all searches have been processed');
+  };
+
+  queue.saturated = function() {
+    console.log('queue is saturated');
   };
 
 
