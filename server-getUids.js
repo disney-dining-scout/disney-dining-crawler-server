@@ -171,29 +171,44 @@
             0,
             -1,
             function(err, uids){
-              if (uids) {
-                uids = uids.join(",");
-                sql += " AND globalSearches.uid NOT IN ("+uids+") ";
-              }
-              sql += "GROUP BY globalSearches.uid ";
-              sql += "ORDER BY globalSearches.lastChecked ASC ";
-              sql += "LIMIT " + search.number.toString();
-              if (subCounter > config.get("freeLimit")) {
-                console.log('Using free searches:', typeOfSearch, subCounter);
-                subCounter = 0;
-              }
-              subCounter += search.number;
-              //console.log(sql);
-              connection.query(
-                sql,
-                function(error, searches) {
-                  if (!error) {
-                    returnSearch(null, searches);
-                  } else {
-                    returnSearch(error);
-                  }
+              var finishSql = function() {
+                sql += "GROUP BY globalSearches.uid ";
+                sql += "ORDER BY globalSearches.lastChecked ASC ";
+                sql += "LIMIT " + search.number.toString();
+                if (subCounter > config.get("freeLimit")) {
+                  console.log('Using free searches:', typeOfSearch, subCounter);
+                  subCounter = 0;
                 }
-              );
+                subCounter += search.number;
+                //console.log(sql);
+                connection.query(
+                  sql,
+                  function(error, searches) {
+                    if (!error) {
+                      returnSearch(null, searches);
+                    } else {
+                      returnSearch(error);
+                    }
+                  }
+                );
+              };
+
+              if (uids) {
+                async.map(
+                  uids,
+                  function(uid, cback) {
+                    cback(null, "'"+uid+"'");
+                  },
+                  function(err, uids){
+                    sql += " AND globalSearches.uid NOT IN ("+uids.join(",")+") ";
+                    finishSql();
+                  }
+                );
+
+              } else {
+               finishSql();
+              }
+
             }
           );
         }
