@@ -20,9 +20,9 @@
         subClient.on("pmessage", function (pattern, channel, message) {
           var _channel = channel.split(":"),
               subChannel = _channel[1];
-          console.log("channel ", channel, ": ", message);
           message = JSON.parse(message);
           if (subChannel === "getsearch") {
+            //console.log("channel ", channel, ": ", message);
             //getSearch(message);
             queue.push(
               message,
@@ -135,7 +135,7 @@
                     " AND userSearches.deleted = 0 AND userSearches.enabled = 1 AND globalSearches.deletedAt IS NULL " +
                     " AND userSearches.user " + typeOfSearch + " (SELECT id FROM `users` WHERE subExpires >= UTC_TIMESTAMP())",
               returnSearch = function(error, searches) {
-                console.log(error);
+                if (!error) { console.log(error); }
                 if (!error) {
                   var i = 0,
                       finished = function() {
@@ -175,12 +175,6 @@
                 sql += "GROUP BY globalSearches.uid ";
                 sql += "ORDER BY globalSearches.lastChecked ASC ";
                 sql += "LIMIT " + search.number.toString();
-                if (subCounter > config.get("freeLimit")) {
-                  console.log('Using free searches:', typeOfSearch, subCounter);
-                  subCounter = 0;
-                }
-                subCounter += search.number;
-                //console.log(sql);
                 connection.query(
                   sql,
                   function(error, searches) {
