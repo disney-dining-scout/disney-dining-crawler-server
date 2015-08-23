@@ -147,7 +147,7 @@
                       searches,
                       function(search, cback) {
                         pubClient.lpush('uids', search.uid);
-                        pubClient.ltrim('uids', 0, 500);
+                        pubClient.ltrim('uids', 0, 2000);
                         cback(null, search.uid);
                       },
                       function(err, uids){
